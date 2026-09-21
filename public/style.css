@@ -1,0 +1,38 @@
+body {
+  font-family: Arial, sans-serif;
+  background: #f4f4f4;
+}
+
+.container {
+  width: 500px;
+  margin: 60px auto;
+  background: white;
+  padding: 25px;
+  border-radius: 8px;
+}
+
+.task-input {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+input {
+  flex: 1;
+  padding: 10px;
+}
+
+button {
+  padding: 8px 12px;
+  cursor: pointer;
+}
+
+li {
+  display: flex;
+  justify-content: space-between;
+  margin: 10px 0;
+}
+
+.completed {
+  text-decoration: line-through;
+}
