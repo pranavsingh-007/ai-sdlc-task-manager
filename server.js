@@ -1,5 +1,6 @@
 const express = require("express");
 const path = require("path");
+const { loadTasks, saveTasks } = require("./persistence/taskStore");
 
 const app = express();
 const PORT = 3000;
@@ -7,16 +8,13 @@ const PORT = 3000;
 app.use(express.json());
 app.use(express.static(path.join(__dirname, "public")));
 
-let tasks = [
-  { id: 1, title: "Complete AI Course", completed: false },
-  { id: 2, title: "Review automation scripts", completed: false }
-];
+let tasks = [];
 
 app.get("/api/tasks", (req, res) => {
   res.json(tasks);
 });
 
-app.post("/api/tasks", (req, res) => {
+app.post("/api/tasks", async (req, res) => {
   const task = {
     id: Date.now(),
     title: req.body.title,
@@ -24,10 +22,11 @@ app.post("/api/tasks", (req, res) => {
   };
 
   tasks.push(task);
+  await saveTasks(tasks);
   res.status(201).json(task);
 });
 
-app.patch("/api/tasks/:id/complete", (req, res) => {
+app.patch("/api/tasks/:id/complete", async (req, res) => {
   const task = tasks.find(t => t.id === Number(req.params.id));
 
   if (!task) {
@@ -35,9 +34,15 @@ app.patch("/api/tasks/:id/complete", (req, res) => {
   }
 
   task.completed = true;
+  await saveTasks(tasks);
   res.json(task);
 });
 
-app.listen(PORT, () => {
-  console.log(`Task Manager running at http://localhost:${PORT}`);
-});
+async function startServer() {
+  tasks = await loadTasks();
+  app.listen(PORT, () => {
+    console.log(`Task Manager running at http://localhost:${PORT}`);
+  });
+}
+
+startServer();
