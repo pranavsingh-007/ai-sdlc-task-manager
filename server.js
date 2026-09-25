@@ -15,9 +15,28 @@ app.get("/api/tasks", (req, res) => {
 });
 
 app.post("/api/tasks", async (req, res) => {
+  const title = req.body?.title;
+
+  // Validate: missing title
+  if (title === undefined || title === null) {
+    return res.status(400).json({ message: "Title is required" });
+  }
+
+  const trimmed = title.trim();
+
+  // Validate: trimmed empty title
+  if (trimmed.length === 0) {
+    return res.status(400).json({ message: "Title cannot be empty" });
+  }
+
+  // Validate: title length > 100
+  if (trimmed.length > 100) {
+    return res.status(400).json({ message: "Title must be at most 100 characters" });
+  }
+
   const task = {
     id: Date.now(),
-    title: req.body.title,
+    title: trimmed,
     completed: false
   };
 
