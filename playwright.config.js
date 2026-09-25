@@ -1,14 +1,21 @@
-const { defineConfig } = require('@playwright/test');
+const { defineConfig, devices } = require('@playwright/test');
 
 module.exports = defineConfig({
   testDir: './tests',
-  timeout: 30_000,
-  expect: { timeout: 5_000 },
-  retries: process.env.CI ? 1 : 0,
-  workers: 1,
-  reporter: [['html'], ['list']],
+  fullyParallel: false,
+  workers: 1, // Single worker to avoid data/tasks.json contention
+  forbidOnly: !!process.env.CI,
+  retries: process.env.CI ? 2 : 0,
+  reporter: 'html',
   use: {
     baseURL: 'http://localhost:3000',
-    trace: 'on-first-retry'
-  }
+    trace: 'on-first-retry',
+  },
+
+  projects: [
+    {
+      name: 'chromium',
+      use: { ...devices['Desktop Chrome'] },
+    },
+  ],
 });

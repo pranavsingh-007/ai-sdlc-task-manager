@@ -1,3 +1,13 @@
 node_modules/
 data/tasks.json
 data/tasks.json.tmp
+
+# Playwright test artifacts
+playwright-report/
+test-results/
+
+# Claude Code session data
+.claude/
+
+# CodeMie CLI data
+.codemie/

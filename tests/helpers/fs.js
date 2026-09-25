@@ -1,54 +1,68 @@
-const fsp = require('fs/promises');
+const fs = require('fs');
 const path = require('path');
 
-const rootDir = path.resolve(__dirname, '../..');
-const tasksFile = path.join(rootDir, 'data', 'tasks.json');
+const TASKS_FILE = path.join(process.cwd(), 'data', 'tasks.json');
+const TASKS_TEMP_FILE = path.join(process.cwd(), 'data', 'tasks.json.tmp');
+const BACKUP_FILE = path.join(process.cwd(), 'data', 'tasks.json.backup');
 
-async function ensureDir() {
-  await fsp.mkdir(path.dirname(tasksFile), { recursive: true });
-}
-
-async function readTasksFile() {
-  try {
-    const txt = await fsp.readFile(tasksFile, 'utf8');
-    return JSON.parse(txt);
-  } catch (e) {
-    if (e.code === 'ENOENT') return null;
-    throw e;
+function ensureDataDir() {
+  const dataDir = path.dirname(TASKS_FILE);
+  if (!fs.existsSync(dataDir)) {
+    fs.mkdirSync(dataDir, { recursive: true });
   }
 }
 
-async function writeTasksFile(tasks) {
-  await ensureDir();
-  await fsp.writeFile(tasksFile, JSON.stringify(tasks, null, 2), 'utf8');
+function backupTasksFile() {
+  ensureDataDir();
+  if (fs.existsSync(TASKS_FILE)) {
+    fs.copyFileSync(TASKS_FILE, BACKUP_FILE);
+  }
 }
 
-let backup = undefined;
+function restoreTasksFile() {
+  ensureDataDir();
 
-async function backupTasksFile() {
-  backup = await readTasksFile();
-}
-
-async function restoreTasksFile() {
-  if (backup === undefined) return;
-
-  if (backup === null) {
-    try {
-      await fsp.unlink(tasksFile);
-    } catch (e) {
-      if (e.code !== 'ENOENT') throw e;
-    }
-    return;
+  // Clean up temp file if present
+  if (fs.existsSync(TASKS_TEMP_FILE)) {
+    fs.unlinkSync(TASKS_TEMP_FILE);
   }
 
-  await writeTasksFile(backup);
+  if (fs.existsSync(BACKUP_FILE)) {
+    fs.copyFileSync(BACKUP_FILE, TASKS_FILE);
+    fs.unlinkSync(BACKUP_FILE);
+  } else if (fs.existsSync(TASKS_FILE)) {
+    fs.unlinkSync(TASKS_FILE);
+  }
+}
+
+function readTasksFile() {
+  if (!fs.existsSync(TASKS_FILE)) {
+    return null;
+  }
+  const content = fs.readFileSync(TASKS_FILE, 'utf-8');
+  return JSON.parse(content);
+}
+
+function writeTasksFile(tasks) {
+  ensureDataDir();
+  fs.writeFileSync(TASKS_FILE, JSON.stringify(tasks, null, 2), 'utf-8');
+}
+
+function deleteTasksFile() {
+  if (fs.existsSync(TASKS_FILE)) {
+    fs.unlinkSync(TASKS_FILE);
+  }
+  // Also remove temp file to ensure clean state
+  if (fs.existsSync(TASKS_TEMP_FILE)) {
+    fs.unlinkSync(TASKS_TEMP_FILE);
+  }
 }
 
 module.exports = {
-  rootDir,
-  tasksFile,
+  TASKS_FILE,
+  backupTasksFile,
+  restoreTasksFile,
   readTasksFile,
   writeTasksFile,
-  backupTasksFile,
-  restoreTasksFile
+  deleteTasksFile
 };
