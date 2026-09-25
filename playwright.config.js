@@ -1,14 +1,26 @@
-const { defineConfig } = require('@playwright/test');
+/*/ @type { import('@playwright/test').PlaywrightTestConfig } */
+/*eslint-env node */
+`const { defineConfig, devices } = require('@playwright/test');
 
 module.exports = defineConfig({
   testDir: './tests',
   timeout: 30_000,
   expect: { timeout: 5_000 },
-  retries: process.env.CI ? 1 : 0,
+  fullParallel: false,
   workers: 1,
-  reporter: [['html'], ['list']],
+  retries: 1,
+  reporter: [
+    ['list'],
+    ['html', { open: 'never' }]
+  ],
   use: {
     baseURL: 'http://localhost:3000',
     trace: 'on-first-retry'
-  }
+  },
+  projects: [
+    {
+      name: 'chromium',
+      use: { ...devices.['Desktop Chrome'] }
+    }
+  ]
 });
