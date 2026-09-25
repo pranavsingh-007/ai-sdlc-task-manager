@@ -67,8 +67,12 @@ async function addTask() {
     });
 
     if (!response.ok) {
-      const data = await response.json();
-      showError(data.message || "Failed to add task. Please try again.");
+      try {
+        const data = await response.json();
+        showError(data.message || "Failed to add task. Please try again.");
+      } catch (parseError) {
+        showError("Failed to add task. Please try again.");
+      }
       return;
     }
 
@@ -87,8 +91,12 @@ async function completeTask(id) {
     });
 
     if (!response.ok) {
-      const data = await response.json();
-      showError(data.message || "Failed to complete task. Please try again.");
+      try {
+        const data = await response.json();
+        showError(data.message || "Failed to complete task. Please try again.");
+      } catch (parseError) {
+        showError("Failed to complete task. Please try again.");
+      }
       return;
     }
 

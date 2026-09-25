@@ -41,7 +41,13 @@ app.post("/api/tasks", async (req, res) => {
   };
 
   tasks.push(task);
-  await saveTasks(tasks);
+
+  try {
+    await saveTasks(tasks);
+  } catch (error) {
+    return res.status(500).json({ message: "Failed to save tasks" });
+  }
+
   res.status(201).json(task);
 });
 
@@ -53,7 +59,13 @@ app.patch("/api/tasks/:id/complete", async (req, res) => {
   }
 
   task.completed = true;
-  await saveTasks(tasks);
+
+  try {
+    await saveTasks(tasks);
+  } catch (error) {
+    return res.status(500).json({ message: "Failed to save tasks" });
+  }
+
   res.json(task);
 });
 
